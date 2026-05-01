@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+
+# Database
+*.db
+instance/
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Next.js
+.next/
+
+# Model files (too large for git)
+*.h5
+*.keras
+model/
+
+# Uploads
+deepfake_detection/backend/deepfake-master/static/uploads/
