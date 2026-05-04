@@ -31,6 +31,3 @@ Thumbs.db
 *.h5
 *.keras
 model/
-
-# Uploads
-deepfake_detection/backend/deepfake-master/static/uploads/
