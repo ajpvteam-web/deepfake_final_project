@@ -16,7 +16,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null)
     const [isLoading, setIsLoading] = useState(true)
 
-    // Check if user is already logged in on mount
     useEffect(() => {
         async function checkAuth() {
             try {
@@ -25,7 +24,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     setUser(response.user)
                 }
             } catch {
-                // User not authenticated
+                
             } finally {
                 setIsLoading(false)
             }

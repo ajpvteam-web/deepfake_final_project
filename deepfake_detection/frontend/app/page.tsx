@@ -5,7 +5,7 @@ import Footer from '@/components/footer'
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Section */}
+      {}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div>
@@ -66,7 +66,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* About Section */}
+      {}
       <section id="about" className="bg-secondary/20 border-y border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

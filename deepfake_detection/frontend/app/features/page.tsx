@@ -42,7 +42,7 @@ export default function FeaturesPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Section */}
+      {}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 animate-fade-in">
         <div className="text-center space-y-4">
           <div className="inline-block px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4 animate-fade-in" style={{ animationDelay: '0.1s' }}>
@@ -57,7 +57,7 @@ export default function FeaturesPage() {
         </div>
       </section>
 
-      {/* Features Grid */}
+      {}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
           {features.map((feature, index) => (
@@ -78,7 +78,7 @@ export default function FeaturesPage() {
         </div>
       </section>
 
-      {/* Technical Specifications */}
+      {}
       <section className="bg-secondary/30 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -105,7 +105,7 @@ export default function FeaturesPage() {
         </div>
       </section>
 
-      {/* Call to Action */}
+      {}
       <section className="bg-primary/5 border-t border-border py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
           <h2 className="text-4xl font-bold text-foreground">Ready to Experience These Features?</h2>

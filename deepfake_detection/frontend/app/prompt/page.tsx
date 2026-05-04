@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { predictImage } from '@/lib/api'
+import { predictImage, getBackendHealth } from '@/lib/api'
 import { useAuth } from '@/hooks/use-auth'
+import { AlertCircle, CheckCircle2, ShieldAlert } from 'lucide-react'
 
 interface UploadedImage {
   id: string
@@ -28,16 +29,23 @@ export default function PromptPage() {
   const { isAuthenticated, isLoading } = useAuth()
   const [images, setImages] = useState<UploadedImage[]>([])
   const [isDragging, setIsDragging] = useState(false)
+  const [backendStatus, setBackendStatus] = useState<any>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Redirect to login if not authenticated
+  useEffect(() => {
+    const checkHealth = async () => {
+      const health = await getBackendHealth()
+      setBackendStatus(health)
+    }
+    checkHealth()
+  }, [])
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/auth/login')
     }
   }, [isAuthenticated, isLoading, router])
 
-  // Show loading state while checking auth
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -49,7 +57,6 @@ export default function PromptPage() {
     )
   }
 
-  // Don't render if not authenticated
   if (!isAuthenticated) {
     return null
   }
@@ -79,13 +86,12 @@ export default function PromptPage() {
 
   const handleFiles = async (files: File[]) => {
     for (const file of files) {
-      // Validate file is an image
+      
       if (!file.type.startsWith('image/')) {
         alert(`${file.name} is not an image file`)
         continue
       }
 
-      // Validate file size (16MB max)
       if (file.size > 16 * 1024 * 1024) {
         alert(`${file.name} is too large (max 16MB)`)
         continue
@@ -108,7 +114,7 @@ export default function PromptPage() {
         setImages(prev => [...prev, newImage])
 
         try {
-          // Call the backend API
+          
           const result = await predictImage(file)
 
           if (result.success) {
@@ -167,7 +173,33 @@ export default function PromptPage() {
           <p className="text-muted-foreground">Upload images to analyze if they are authentic or deepfake</p>
         </div>
 
-        {/* Upload Area */}
+        {}
+        {backendStatus && backendStatus.model.includes('untrained') && (
+          <div className="mb-8 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-3">
+            <ShieldAlert className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-sm font-semibold text-amber-500">System Using Fallback Model</h3>
+              <p className="text-xs text-amber-600/80 mt-1">
+                The detection model is currently in fallback mode because no trained weights were found. 
+                Predictions will be based on standard ImageNet features and may not be accurate for deepfake detection.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {backendStatus && backendStatus.face_detection && (
+          <div className="mb-8 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-start gap-3">
+            <CheckCircle2 className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-sm font-semibold text-blue-500">Enhanced Detection Active</h3>
+              <p className="text-xs text-blue-600/80 mt-1">
+                Auto face detection is enabled. The system will automatically crop and analyze faces for maximum accuracy.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {}
         <div
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
@@ -183,28 +215,26 @@ export default function PromptPage() {
             ref={fileInputRef}
             type="file"
             accept="image/*"
-            multiple
             onChange={handleFileSelect}
             className="hidden"
+            multiple
           />
           <div className="flex flex-col items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
               </svg>
             </div>
             <div>
-              <p className="text-lg font-medium text-foreground">
-                Drop images here or click to upload
-              </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Supports JPG, PNG, WEBP up to 10MB
-              </p>
+              <p className="text-xl font-semibold mb-1">Click or drag images here</p>
+              <p className="text-sm text-muted-foreground">Support for PNG, JPG, JPEG (Max 16MB)</p>
             </div>
+            <Button type="button" variant="outline" className="mt-2">
+              Select Files
+            </Button>
           </div>
         </div>
 
-        {/* Images Grid */}
         {images.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {images.map((image) => (
@@ -215,7 +245,7 @@ export default function PromptPage() {
                     alt={image.name}
                     className="w-full h-full object-cover"
                   />
-                  {/* Remove Button */}
+                  {}
                   <button
                     onClick={() => removeImage(image.id)}
                     className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
@@ -225,7 +255,7 @@ export default function PromptPage() {
                     </svg>
                   </button>
 
-                  {/* Status Overlay */}
+                  {}
                   {image.status !== 'complete' && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                       {image.status === 'analyzing' ? (
@@ -258,7 +288,6 @@ export default function PromptPage() {
                       </div>
                       <div className="text-xs text-muted-foreground">
                         <p>Confidence: {(image.result.confidence * 100).toFixed(1)}%</p>
-                        <p>Score: {image.result.score.toFixed(1)}%</p>
                       </div>
                     </div>
                   )}
@@ -273,7 +302,7 @@ export default function PromptPage() {
           </div>
         )}
 
-        {/* Empty State */}
+        {}
         {images.length === 0 && (
           <div className="text-center py-12">
             <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-secondary flex items-center justify-center">

@@ -8,10 +8,10 @@ import Footer from '@/components/footer'
 export default function WatchDemoPage() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Main Content */}
+      {}
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto space-y-12">
-          {/* Hero Section */}
+          {}
           <div className="text-center space-y-4 animate-fade-in">
             <h2 className="text-4xl font-bold text-foreground animate-fade-in" style={{ animationDelay: '0.1s' }}>Watch Our Demo</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: '0.2s' }}>
@@ -19,7 +19,7 @@ export default function WatchDemoPage() {
             </p>
           </div>
 
-          {/* Project Overview */}
+          {}
           <div className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
             <Card>
             <CardHeader>
@@ -66,42 +66,7 @@ export default function WatchDemoPage() {
           </Card>
           </div>
 
-          {/* Demo Video */}
-          <div className="animate-fade-in" style={{ animationDelay: '0.4s' }}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Live Demo</CardTitle>
-              <CardDescription>
-                Watch DeepShield detect deepfakes in real-time
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="aspect-video bg-secondary/50 rounded-lg flex items-center justify-center border border-border">
-                {/* Replace this with your actual demo video */}
-                <div className="text-center space-y-4">
-                  <div className="w-16 h-16 mx-auto bg-primary rounded-full flex items-center justify-center">
-                    <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z"/>
-                    </svg>
-                  </div>
-                  <p className="text-muted-foreground">
-                    Demo video will be embedded here
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Replace with actual video URL or embed code
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4 text-center">
-                <p className="text-sm text-muted-foreground">
-                  This demo showcases our detection algorithms processing various types of media content.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-          </div>
-
-          {/* Call to Action */}
+          {}
           <div className="animate-fade-in" style={{ animationDelay: '0.5s' }}>
           <div className="text-center space-y-4">
             <h3 className="text-2xl font-semibold text-foreground">Ready to Try DeepShield?</h3>

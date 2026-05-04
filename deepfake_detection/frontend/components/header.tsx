@@ -10,7 +10,6 @@ export default function Header() {
   const router = useRouter()
   const { isAuthenticated, user, logout, isLoading } = useAuth()
 
-  // Don't show header on auth page
   if (pathname?.startsWith('/auth')) {
     return null
   }

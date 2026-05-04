@@ -6,7 +6,6 @@ from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
 
 print("Starting training...")
 
-# ✅ Data augmentation (important)
 train_datagen = ImageDataGenerator(
     rescale=1./255,
     rotation_range=20,
@@ -17,14 +16,14 @@ train_datagen = ImageDataGenerator(
 val_datagen = ImageDataGenerator(rescale=1./255)
 
 train_data = train_datagen.flow_from_directory(
-    'dataset/train',
+    ,
     target_size=(224,224),
     batch_size=16,
     class_mode='binary'
 )
 
 val_data = val_datagen.flow_from_directory(
-    'dataset/valid',
+    ,
     target_size=(224,224),
     batch_size=16,
     class_mode='binary'
@@ -32,17 +31,14 @@ val_data = val_datagen.flow_from_directory(
 
 print("Dataset loaded!")
 
-# ✅ Pretrained base model
 base_model = MobileNetV2(
     weights='imagenet',
     include_top=False,
     input_shape=(224,224,3)
 )
 
-# Freeze base layers
 base_model.trainable = False
 
-# ✅ Custom head
 x = base_model.output
 x = layers.GlobalAveragePooling2D()(x)
 x = layers.BatchNormalization()(x)
@@ -60,9 +56,8 @@ model.compile(
 
 print("Model ready!")
 
-# ✅ Callbacks
 checkpoint = ModelCheckpoint(
-    'model/best_model.keras',
+    ,
     monitor='val_accuracy',
     save_best_only=True,
     mode='max'
@@ -74,7 +69,6 @@ earlystop = EarlyStopping(
     restore_best_weights=True
 )
 
-# Training
 model.fit(
     train_data,
     epochs=15,
@@ -82,7 +76,6 @@ model.fit(
     callbacks=[checkpoint, earlystop]
 )
 
-# Optional fine-tuning (extra boost 🔥)
 base_model.trainable = True
 
 model.compile(
@@ -99,7 +92,6 @@ model.fit(
     validation_data=val_data
 )
 
-# Save final
 model.save('model/final_model.keras')
 
 print("Done!")

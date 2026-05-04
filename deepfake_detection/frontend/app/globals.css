@@ -3,7 +3,7 @@
 @import 'tw-animate-css';
 
 :root {
-  /* Light theme colors */
+  
   --background: #ffffff;
   --foreground: #000000;
   --card: #f8f9fa;
@@ -38,7 +38,6 @@
   --sidebar-border: #e2e8f0;
   --sidebar-ring: #3b82f6;
 }
-
 
 @theme inline {
   --font-sans: 'Poppins', 'system-ui', 'sans-serif';
@@ -91,7 +90,6 @@
   }
 }
 
-/* Hide Next.js development logo */
 .nextjs-dev,
 .nextjs-dev-logo,
 #__nextjs_dev,
@@ -101,7 +99,6 @@
   opacity: 0 !important;
 }
 
-/* Loading and Animation Styles */
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -159,7 +156,7 @@
 }
 
 @layer utilities {
-  /* Scroll-triggered animations - start with opacity 0 */
+  
   .scroll-animate-fade-in {
     opacity: 0;
     transform: translateY(10px);
@@ -187,7 +184,6 @@
     animation: slide-in-right 0.6s ease-out forwards;
   }
 
-  /* Instant animations - for page load */
   .animate-fade-in {
     animation: fade-in 0.6s ease-out forwards;
   }
@@ -223,12 +219,11 @@
   }
 }
 
-/* Hide scrollbar utility */
 .hide-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: 0;  /* Firefox */
+  -ms-overflow-style: none;  
+  scrollbar-width: 0;  
 }
 
 .hide-scrollbar::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari and Opera */
+  display: none;  
 }

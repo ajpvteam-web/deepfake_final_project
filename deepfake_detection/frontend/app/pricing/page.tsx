@@ -56,7 +56,7 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Section */}
+      {}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 animate-fade-in">
         <div className="text-center space-y-4">
           <div className="inline-block px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4 animate-fade-in" style={{ animationDelay: '0.1s' }}>
@@ -71,7 +71,7 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Pricing Cards */}
+      {}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {plans.map((plan, index) => (
@@ -117,7 +117,7 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* FAQ Section */}
+      {}
       <section className="bg-secondary/10 border-y border-border py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 animate-fade-in">
@@ -148,7 +148,7 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {}
       <section className="bg-primary/5 border-t border-border py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8 animate-fade-in" style={{ animationDelay: '0.3s' }}>
           <h2 className="text-3xl font-bold text-foreground">Ready to get started?</h2>

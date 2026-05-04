@@ -14,11 +14,12 @@ from datetime import timedelta
 import tensorflow as tf
 from tensorflow.keras.applications import MobileNetV2
 from tensorflow.keras import layers, models
+import cv2
 
-# Initialize Flask app
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+
 app = Flask(__name__)
 
-# Configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///deepfake_users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'your-secret-key-change-in-production')
@@ -72,17 +73,47 @@ class User(db.Model):
 MODEL_PATHS = [
     os.path.join('model', 'final_model.keras'),
     os.path.join('model', 'best_model.keras'),
-    os.path.join('model', 'deepfake_model.h5'),
 ]
 
-def load_model():
+def load_model(default_path=None):
     """Load the trained Keras model, or build an untrained MobileNetV2 as fallback"""
-    for path in MODEL_PATHS:
-        if os.path.exists(path):
-            print(f"[MODEL] Loading trained model from: {path}")
-            model = tf.keras.models.load_model(path)
-            print(f"[MODEL] Model loaded successfully! Input shape: {model.input_shape}")
+    paths_to_check = [default_path] if default_path else []
+    paths_to_check.extend([
+        os.path.join('model', 'final_model.keras'),
+        os.path.join('model', 'best_model.keras'),
+    ])
+
+    for path in paths_to_check:
+        if path and os.path.exists(path):
+            try:
+                print(f"[MODEL] Loading trained model from: {path}")
+                model = tf.keras.models.load_model(path)
+                print(f"[MODEL] Model loaded successfully! Input shape: {model.input_shape}")
+                return model, True
+            except Exception as e:
+                print(f"[MODEL] Error loading {path}: {e}")
+
+    # Fallback: Try loading from config.json and model.weights.h5
+    config_path = os.path.join('model', 'config.json')
+    weights_path = os.path.join('model', 'model.weights.h5')
+    
+    if os.path.exists(config_path) and os.path.exists(weights_path):
+        try:
+            print(f"[MODEL] Loading model from config and weights...")
+            with open(config_path, 'r') as f:
+                model_config = f.read()
+            
+            # Reconstruct model from JSON architecture
+            model = tf.keras.models.model_from_json(model_config)
+            # Load weights
+            model.load_weights(weights_path)
+            # Re-compile to avoid issues (MobileNetV2 architecture)
+            model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+            
+            print(f"[MODEL] Model loaded successfully from config/weights!")
             return model, True
+        except Exception as e:
+            print(f"[MODEL] Error loading from config/weights: {e}")
 
     # No trained model found - build untrained MobileNetV2 architecture as fallback
     print("[MODEL] No trained model found. Building untrained MobileNetV2 fallback...")
@@ -105,19 +136,32 @@ def load_model():
     return model, False
 
 # Load model at startup
-ml_model, model_is_trained = load_model()
+ml_model, model_is_trained = load_model('model/final_model.keras')
 
 # ==================== HELPER FUNCTIONS ====================
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def preprocess_image(image):
+def preprocess_image(image, target_size=(224, 224)):
     """Preprocess image for model prediction"""
-    image = image.resize((224, 224))
-    image = np.array(image) / 255.0
-    image = np.expand_dims(image, axis=0)
-    return image
+    try:
+        # Resize image
+        image = image.resize(target_size)
+        
+        # Convert to numpy array and rescale (matching training: 1/255)
+        img_array = np.array(image) / 255.0
+        
+        # Ensure 3 channels (RGB)
+        if img_array.shape[-1] != 3:
+            img_array = img_array[:, :, :3]
+            
+        # Add batch dimension
+        img_array = np.expand_dims(img_array, axis=0)
+        return img_array
+    except Exception as e:
+        print(f"[PREPROCESS] Error: {e}")
+        return None
 
 # ==================== AUTHENTICATION ROUTES ====================
 
@@ -265,11 +309,14 @@ def get_current_user():
 @app.route('/health', methods=['GET'])
 def health():
     """Health check endpoint"""
+    input_shape = ml_model.input_shape if ml_model else None
     return jsonify({
         "status": "ok",
         "message": "Backend is running",
         "model": "trained" if model_is_trained else "untrained (MobileNetV2 fallback)",
-        "model_loaded": ml_model is not None
+        "model_loaded": ml_model is not None,
+        "model_input_shape": list(input_shape) if input_shape else None,
+        "face_detection": face_cascade is not None and not face_cascade.empty()
     }), 200
 
 # ==================== PREDICTION ROUTE (PROTECTED) ====================
@@ -318,10 +365,51 @@ def predict_route():
                 "error": f"Failed to process image: {str(e)}"
             }), 400
         
-        # Preprocess and predict using the real model
-        processed = preprocess_image(image)
-        prediction = ml_model.predict(processed, verbose=0)
+        # Perform Face Detection
+        img_cv = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+        gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(gray, 1.1, 4)
         
+        face_detected = False
+        if len(faces) > 0:
+            # Sort by area and pick the largest face
+            faces = sorted(faces, key=lambda f: f[2] * f[3], reverse=True)
+            x, y, w, h = faces[0]
+            
+            # Add some padding to the face crop (optional but often better)
+            padding = int(min(w, h) * 0.1)
+            y_start = max(0, y - padding)
+            y_end = min(img_cv.shape[0], y + h + padding)
+            x_start = max(0, x - padding)
+            x_end = min(img_cv.shape[1], x + w + padding)
+            
+            # Crop the face
+            face_img = image.crop((x_start, y_start, x_end, y_end))
+            image_to_process = face_img
+            face_detected = True
+            print(f"[PREDICT] Face detected and cropped for analysis")
+        else:
+            image_to_process = image
+            print(f"[PREDICT] No face detected, analyzing full image")
+
+        # Get target size from model input
+        # Standard MobileNetV2 is (224, 224), but we check the loaded model
+        target_size = (224, 224)
+        if ml_model and hasattr(ml_model, 'input_shape'):
+            shape = ml_model.input_shape
+            if shape and len(shape) >= 3:
+                target_size = (shape[1], shape[2])
+        
+        # Preprocess and predict
+        processed = preprocess_image(image_to_process, target_size=target_size)
+        
+        if processed is None:
+            return jsonify({
+                "success": False,
+                "error": "Failed to preprocess image"
+            }), 500
+
+        prediction = ml_model.predict(processed, verbose=0)
         confidence = float(prediction[0][0])
         
         # Determine result
@@ -336,7 +424,9 @@ def predict_route():
             "authenticity_percentage": round(authenticity_score, 2),
             "label": "Real Image" if is_authentic else "Fake Image",
             "user_id": user_id,
-            "model_trained": model_is_trained
+            "model_trained": model_is_trained,
+            "face_detected": face_detected,
+            "input_size": f"{target_size[0]}x{target_size[1]}"
         }
         
         return jsonify(result), 200

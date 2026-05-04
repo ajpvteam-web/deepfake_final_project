@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -11,16 +11,27 @@ import { useAuth } from '@/hooks/use-auth'
 
 export default function LoginPage() {
     const router = useRouter()
-    const { login, isAuthenticated } = useAuth()
+    const { login, isAuthenticated, isLoading: authLoading } = useAuth()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
     const [isLoading, setIsLoading] = useState(false)
 
-    // Redirect if already logged in
-    if (isAuthenticated) {
-        router.push('/prompt')
-        return null
+    useEffect(() => {
+        if (!authLoading && isAuthenticated) {
+            router.push('/prompt')
+        }
+    }, [isAuthenticated, authLoading, router])
+
+    if (authLoading || isAuthenticated) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-sm text-muted-foreground">Redirecting...</p>
+                </div>
+            </div>
+        )
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -28,7 +39,6 @@ export default function LoginPage() {
         setError('')
         setIsLoading(true)
 
-        // Validation
         if (!email || !password) {
             setError('Email and password are required')
             setIsLoading(false)
@@ -66,14 +76,14 @@ export default function LoginPage() {
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        {/* Error Message */}
+                        {}
                         {error && (
                             <div className="p-3 rounded-lg bg-red-100 border border-red-200 text-red-700 text-sm">
                                 {error}
                             </div>
                         )}
 
-                        {/* Email */}
+                        {}
                         <div className="space-y-2">
                             <Label htmlFor="email">Email</Label>
                             <Input
@@ -87,7 +97,7 @@ export default function LoginPage() {
                             />
                         </div>
 
-                        {/* Password */}
+                        {}
                         <div className="space-y-2">
                             <Label htmlFor="password">Password</Label>
                             <Input
@@ -101,7 +111,7 @@ export default function LoginPage() {
                             />
                         </div>
 
-                        {/* Submit Button */}
+                        {}
                         <Button
                             type="submit"
                             className="w-full"
@@ -111,7 +121,7 @@ export default function LoginPage() {
                         </Button>
                     </form>
 
-                    {/* Sign Up Link */}
+                    {}
                     <div className="mt-4 text-center text-sm text-muted-foreground">
                         Don't have an account?{' '}
                         <Link href="/auth/signup" className="text-primary hover:underline font-medium">
@@ -119,7 +129,7 @@ export default function LoginPage() {
                         </Link>
                     </div>
 
-                    {/* Demo Link */}
+                    {}
                     <div className="mt-4 pt-4 border-t border-border text-center text-xs text-muted-foreground">
                         <p className="mb-2">Demo Credentials:</p>
                         <p>Email: <code className="bg-secondary px-2 py-1 rounded">demo@example.com</code></p>

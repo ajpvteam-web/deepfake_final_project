@@ -1,10 +1,5 @@
-/**
- * API Service for Deepfake Detection Backend with Authentication
- */
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'
-
-// ==================== INTERFACES ====================
 
 export interface User {
     id: number
@@ -30,8 +25,6 @@ export interface PredictionResult {
     user_id?: number
     error?: string
 }
-
-// ==================== TOKEN MANAGEMENT ====================
 
 const TOKEN_KEY = 'deepfake_auth_token'
 const USER_KEY = 'deepfake_user'
@@ -70,11 +63,6 @@ export function getUser(): User | null {
     return null
 }
 
-// ==================== AUTH ENDPOINTS ====================
-
-/**
- * Sign up with email and password
- */
 export async function signup(
     email: string,
     username: string,
@@ -107,9 +95,6 @@ export async function signup(
     }
 }
 
-/**
- * Login with email and password
- */
 export async function login(
     email: string,
     password: string
@@ -141,9 +126,6 @@ export async function login(
     }
 }
 
-/**
- * Get current authenticated user
- */
 export async function getCurrentUser(): Promise<AuthResponse> {
     try {
         const token = getToken()
@@ -181,18 +163,10 @@ export async function getCurrentUser(): Promise<AuthResponse> {
     }
 }
 
-/**
- * Logout user
- */
 export function logout(): void {
     clearToken()
 }
 
-// ==================== PREDICTION ENDPOINT ====================
-
-/**
- * Send an image to the backend for deepfake detection (REQUIRES AUTH)
- */
 export async function predictImage(file: File): Promise<PredictionResult> {
     try {
         const token = getToken()
@@ -257,14 +231,12 @@ export async function predictImage(file: File): Promise<PredictionResult> {
     }
 }
 
-/**
- * Check if backend is available
- */
-export async function checkBackendHealth(): Promise<boolean> {
+export async function getBackendHealth(): Promise<any> {
     try {
         const response = await fetch(`${BACKEND_URL}/health`)
-        return response.ok
+        if (!response.ok) return null
+        return await response.json()
     } catch {
-        return false
+        return null
     }
 }
